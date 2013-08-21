@@ -55,12 +55,12 @@ perekladinaHeight[4] = 25;
 perekladinaColor[4] = "#596b77";
 
 
-var numberPerekladins = 5; // Число перекладин
+var numberPerekladina = 5; // Число перекладин
 
 var boxIdText = ""; // Строковая переменная, в которой будет HTML-текст
 
 var creatPerekladinu = function(){
-  for ( i=0 ; i < numberPerekladins ; i++ ) {
+  for ( i=0 ; i < numberPerekladina ; i++ ) {
     boxIdText = boxIdText + "<div style='position:absolute;top:" + perekladinaTop[i] + "px;left:" + perekladinaLeft[i] + "px;width:"+ perekladinaWidth[i] +"px;height:"+ perekladinaHeight[i] +"px;background:"+ perekladinaColor[i] +"'></div>";
   }
   document.getElementById('box-perecladiny').innerHTML = boxIdText;
@@ -94,8 +94,8 @@ var movieBall = function() { // Основная функция, которая 
     }
     
     // Если мячик попал на прекладину
-    for ( i = 0 ; i < numberPerekladins ; i++ ) {
-      setKnockPerekladina(perekladinaLeft[i], perekladinaTop[i], perekladinaWidth[i], perekladinaHeight[i]);
+    for ( i = 0 ; i < numberPerekladina ; i++ ) {
+      setKnockPerekladina(perekladinaLeft[i], perekladinaTop[i], perekladinaWidth[i], perekladinaHeight[i], i);
     }
     
     
@@ -160,7 +160,6 @@ var movieBall = function() { // Основная функция, которая 
       stopJumpBall();
     }
     
-
   }, 10);
 }
 
@@ -216,27 +215,38 @@ var setReboundLoss = function(speed) { // Функция, которая отв�
   speed = speed - speed*rebound/100;
 }
 
-var setKnockPerekladina = function(left, top, width, height) { // Функция, которая принимает значения прямоугольной перекладины и делает отскок мячика
+var setKnockPerekladina = function(left, top, width, height, number) { // Функция, которая принимает значения прямоугольной перекладины и делает отскок мячика
   if ( xDirection === 1 && x > (left - 10) && xPast <= (left - 10) && y >= (top-10) && y <= (top + height) ) {
     xDirection = -1; // Смена направления движения
     setReboundLoss(xSpeed); // Уменьшение скорости из-за отскока
     x = (left-10)*2 - x; // Возвращает мяч назад за границы перекладины
+    changePerekladina(number); // Запускаем функцию смены места
   }
   if ( xDirection === -1 && x < (left + width) && xPast >= (left + width) && y >= (top-10) && y <= (top + height) ){
     xDirection = 1;
     setReboundLoss(xSpeed);
     x = (left+width)*2 - x;
+    changePerekladina(number);
   }
   if (yDirection === 1 && x >= (left-10) && x <= (left + width) && y > (top-10) && yPast <= (top-10) ){
     yDirection = -1;
     setReboundLoss(ySpeed);
     y = (top-10)*2 - y;
+    changePerekladina(number);
   }
   if (yDirection === -1 && x >= (left-10) && x <= (left + width) && y < (top + height) && yPast >= (top + height) ){
     yDirection = 1;
     setReboundLoss(ySpeed);
     y = (top+height)*2 - y;
+    changePerekladina(number);
   }
+}
+
+var changePerekladina = function(number) {
+  perekladinaTop[number] = Math.random()*200+20;
+  perekladinaLeft[number] = Math.random()*300+20;
+  boxIdText = "";
+  creatPerekladinu();
 }
 
 
@@ -280,14 +290,19 @@ var setKnockPerekladina = function(left, top, width, height) { // Функция
   border-radius:5px;
 }
 
-#clear{
-  clear:both;
-/* Вообще-то этот блок для того, чтобы не было обтеканий, но если раскомментировать другие свойства и тестовый код в функциях, то это место, где можно смотреть значения переменных 
-  width:400px;
-  height:50px;
-  margin-top:50px;
-  border:1px solid red;*/
+#clear{clear:both; margin:20px 0 30px 0;}
+#clear p{
+  display:block;
+  width:30px;
+  height:20px;
+  margin:20px 20px 0 0;
+  color:#ffffff;
+  float:left;
+  text-align:center;
 }
+#clear p.stop{clear:right;}
+
+h2{clear:both;}
 
 #gravitation1, #gravitation2, #gravitation3, #gravitation4{ /* Давно заметил удивительную вещь в HTML − чем проще выглядит элемент, тем сложнее у него CSS */
   position:absolute;
@@ -327,6 +342,7 @@ var setKnockPerekladina = function(left, top, width, height) { // Функция
   <div id="ball"></div>
 </div>
 
-<div id="clear"></div>
+<div id="clear">
+</div>
 
 </div> <!-- Закрыт блок Game -->
