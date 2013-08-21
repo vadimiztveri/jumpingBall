@@ -1,0 +1,334 @@
+<script type="text/javascript">
+
+var x = 150; // место положение шарика по x
+var y = 290; // место положение шарика по y
+var xPast = 150; // место положение шарика по x в предыдущий шаг
+var yPast = 290; //место положение шарика по y в предыдущий шаг
+var xDirection = 1; // Направление движения по X
+var yDirection = 1; // Направление движения по Y
+
+var xSpeed = 0; // Скорость начального вылета по X
+var ySpeed = 0; // Скорость начального вылета по Y
+
+var rebound = 100; // Потери энергии при отскоке
+var airWindage = 100; // Сопротивление воздуха
+
+var jumpBall; // Объявляем переменную, содержащую функцию движения, нужна для того, чтобы остановить через clearInterval(jumpBall)
+var gravitation = 3; // Объявляем переменную, которая отвечает за гравитацию, возможные значения: Вверх 1, Вправо 2, Вниз 3, Влево 4.
+
+var jumping = 0; // Переменная, которая считает, сколько уже прыгает мячик, от 0 до 100
+
+var perekladinaTop = new Array(); // Создаем массивы с данными о перекладинах
+var perekladinaLeft = new Array();
+var perekladinaWidth = new Array();
+var perekladinaHeight = new Array();
+var perekladinaColor = new Array();
+
+perekladinaTop[0] = 100;
+perekladinaLeft[0] = 140;
+perekladinaWidth[0] = 60;
+perekladinaHeight[0] = 60;
+perekladinaColor[0] = "#78b654";
+
+perekladinaTop[1] = 50;
+perekladinaLeft[1] = 250;
+perekladinaWidth[1] = 8;
+perekladinaHeight[1] = 40;
+perekladinaColor[1] = "#999999";
+
+perekladinaTop[2] = 200;
+perekladinaLeft[2] = 50;
+perekladinaWidth[2] = 50;
+perekladinaHeight[2] = 15;
+perekladinaColor[2] = "#a02f15";
+
+perekladinaTop[3] = 180;
+perekladinaLeft[3] = 320;
+perekladinaWidth[3] = 30;
+perekladinaHeight[3] = 20;
+perekladinaColor[3] = "#5e90d1";
+
+perekladinaTop[4] = 80;
+perekladinaLeft[4] = 60;
+perekladinaWidth[4] = 20;
+perekladinaHeight[4] = 25;
+perekladinaColor[4] = "#596b77";
+
+
+var numberPerekladins = 5; // Число перекладин
+
+var boxIdText = ""; // Строковая переменная, в которой будет HTML-текст
+
+var creatPerekladinu = function(){
+  for ( i=0 ; i < numberPerekladins ; i++ ) {
+    boxIdText = boxIdText + "<div style='position:absolute;top:" + perekladinaTop[i] + "px;left:" + perekladinaLeft[i] + "px;width:"+ perekladinaWidth[i] +"px;height:"+ perekladinaHeight[i] +"px;background:"+ perekladinaColor[i] +"'></div>";
+  }
+  document.getElementById('box-perecladiny').innerHTML = boxIdText;
+}
+
+
+
+
+var movieBall = function() { // Основная функция, которая отвечает за движение мячика
+
+  jumpBall = setInterval(function(){
+    if( x > 390 && xPast <= 390 ){ // Чтобы проверить, что шарик реально стремиться пролететь через стену, нужно видеть, что предыдущее место шарика было до стены, а следующее через стену
+      xDirection = -1; // Меняем направление после отскока
+      setReboundLoss(xSpeed); // Уменьшение скорости из-за отскока
+      x = 780 - x  ; // Получаем новое значение X внутри границы
+    }
+    if( x < 0 && xPast >= 0){
+      xDirection = 1;
+      setReboundLoss(xSpeed);
+      x = x * -1;
+    }
+    if( y > 290 && yPast <= 290 ){ // Изменяется направление при ударе о пол или потолок
+      yDirection = -1;
+      setReboundLoss(ySpeed);
+      y = 580 - y;
+    }
+    if( y < 1 && yPast >= 1){ // Изменяется направление при ударе о пол или потолок
+      yDirection = 1;
+      setReboundLoss(ySpeed);
+      y = y*-1 + 2;
+    }
+    
+    // Если мячик попал на прекладину
+    for ( i = 0 ; i < numberPerekladins ; i++ ) {
+      setKnockPerekladina(perekladinaLeft[i], perekladinaTop[i], perekladinaWidth[i], perekladinaHeight[i]);
+    }
+    
+    
+    if (y > 288 && gravitation === 3 || y < 2 && gravitation === 1 ) {
+      xSpeed = xSpeed - xSpeed*airWindage/10000; // Влияние сопротивления воздуха и трения стенок
+    } else {
+      xSpeed = xSpeed - xSpeed*airWindage/50000; // Влияние сопротивления воздуха
+    }
+    if (xSpeed < 0) { // Скорость в нашем случае не может быть отрицательной, если она таковой вдруг стала, это значит, что притяжение изменило направление движения
+      xDirection = xDirection*-1; // Меняем направление движения по X
+      xSpeed = xSpeed*-1; // Скорость движения c отрицательной на положительньную.
+    }
+    if ( gravitation===2 ) { xSpeed = xSpeed + xDirection; } // Изменение скорости в зависимости от притяжения, если притяжение вправо
+    if ( gravitation===4 ) { xSpeed = xSpeed - xDirection; } // Изменение скорости в зависимости от притяжения, если притяжение влево
+    
+    xPast = x;
+    x = x + xDirection*xSpeed/50; // Вычисляем координаты по X
+    document.getElementById('ball').style.left = x; // Выводим координаты по X
+
+    if (x > 388 && gravitation === 2 || x < 2 && gravitation === 4 ) {
+      ySpeed = ySpeed - ySpeed*airWindage/10000;
+    } else {
+      ySpeed = ySpeed - ySpeed*airWindage/50000;
+    }
+    if (ySpeed < 0) {
+      yDirection = yDirection*-1;
+      ySpeed = ySpeed*-1;
+    }
+    if ( gravitation===3 ) { ySpeed = ySpeed + yDirection; } // Изменение скорости в зависимости от притяжения, если притяжение вниз
+    if ( gravitation===1 ) { ySpeed = ySpeed - yDirection; } // Изменение скорости в зависимости от притяжения, если притяжение вверх
+
+    yPast = y;
+    y = y + ySpeed*yDirection/50;
+    document.getElementById('ball').style.top = y;
+
+    if (jumping<100){
+      jumping++;
+    } else {
+      if ( ySpeed < 3 && y < 3 && gravitation===1){ // Остановка мяча по Y, если гравитация к потолку
+        ySpeed = 0;
+        y = 1;
+        if ( xSpeed < 5 ) {xSpeed = 0;} // А если при этом еще горизонтальная скорость мала, то мяч останавливается и по X
+      } 
+      if ( ySpeed < 3 && y > 289 && gravitation===3){
+        ySpeed = 0;
+        y = 290;
+        if ( xSpeed < 5 ) {xSpeed = 0;}
+      }
+      if ( xSpeed < 3 && x < 1 && gravitation===4){
+        xSpeed = 0;
+        x = 0;
+        if ( ySpeed < 5 ) {ySpeed = 0;}
+      }
+      if ( xSpeed < 3 && x > 389 && gravitation===2){
+        xSpeed = 0;
+        x = 390;
+        if ( ySpeed < 5 ) {ySpeed = 0;}
+      }
+    }
+  
+    if (xSpeed+ySpeed < 1 && x - xPast === 0 && y - yPast === 0){ // Если мяч стоит на месте и скорости равны нулю, то движение прекращается
+      stopJumpBall();
+    }
+    
+    var vyvod="ySpeed: " + ySpeed + "<br>y: " + y + "<br>jumping: " + jumping ;
+    document.getElementById('clear').innerHTML = vyvod;
+    
+  }, 10);
+}
+
+var stopJumpBall = function(){ // Функция, которая останавливает движение мяча
+  clearInterval(jumpBall);
+  jumping = 0;
+}
+
+
+var colorButtonGrav = function(colorGrav){ // Функция для того, чтобы менять цвет кнопки графитации, которая сейчас нажата
+  for ( i = 1 ; i < 5 ; i++ ){
+  	nameI = "gravitation" + i;
+    if ( i === colorGrav ) {
+      document.getElementById(nameI).style.background = "#b2d8ad";
+    } else {
+      document.getElementById(nameI).style.background = "#c7d9ee";
+    }
+  }
+}
+
+var pushButton = function(grav){
+  gravitation = grav; // Переменная gravitation получает значение из кнопок
+  colorButtonGrav(gravitation); // Меняем цвет кнопки
+  if (jumping === 0){
+    movieBall();
+    jumping = 1;
+  }
+}
+
+
+document.onkeydown = function checkKeyCode(event){ // Функция, которая берет события клавиатуры
+  var keyCode; // Эта переменная будет получать код клавиши
+  if(!event) {var event = window.event;} // Если ничего не нажато
+  if (event.keyCode) {keyCode = event.keyCode;} // IE
+  else if(event.which) {keyCode = event.which;} // all browsers
+  switch(keyCode) { // Перебор клавиш
+    case 37: // влево
+      pushButton(4);
+      return false;
+    case 38: // вверх
+      pushButton(1);
+      return false;
+    case 39: // вправо
+      pushButton(2);
+      return false;
+    case 40: // вниз
+      pushButton(3);
+      return false;
+  }
+}
+
+var setReboundLoss = function(speed) { // Функция, которая отвечает за потерю скорости при отскоке
+  speed = speed - speed*rebound/100;
+}
+
+var setKnockPerekladina = function(left, top, width, height) { // Функция, которая принимает значения прямоугольной перекладины и делает отскок мячика
+  if ( xDirection === 1 && x > (left - 10) && xPast <= (left - 10) && y >= (top-10) && y <= (top + height) ) {
+    xDirection = -1; // Смена направления движения
+    setReboundLoss(xSpeed); // Уменьшение скорости из-за отскока
+    x = (left-10)*2 - x; // Возвращает мяч назад за границы перекладины
+  }
+  if ( xDirection === -1 && x < (left + width) && xPast >= (left + width) && y >= (top-10) && y <= (top + height) ){
+    xDirection = 1;
+    setReboundLoss(xSpeed);
+    x = (left+width)*2 - x;
+  }
+  if (yDirection === 1 && x >= (left-10) && x <= (left + width) && y > (top-10) && yPast <= (top-10) ){
+    yDirection = -1;
+    setReboundLoss(ySpeed);
+    y = (top-10)*2 - y;
+  }
+  if (yDirection === -1 && x >= (left-10) && x <= (left + width) && y < (top + height) && yPast >= (top + height) ){
+    yDirection = 1;
+    setReboundLoss(ySpeed);
+    y = (top+height)*2 - y;
+  }
+}
+
+
+</script>
+
+
+
+<style>
+#game{position:relative;}
+
+#settings-box{
+  position:relative;
+  width:200px;
+  height:300px;
+  float:left;
+}
+
+#box-jump-ball{ /* Это блок, в котором прыгает мячик */
+  position:absolute;
+  width:400;
+  height:300px;
+  margin:0 0 0 220px;
+  background:transparent;
+  box-shadow:0 0 20px #888888;
+}
+
+#box-perecladiny{ /* Это точно такой же блок, как и тот, в котором прыгает мячик, лежит внизу. Он нужен для того, что бы JS добавлял в него массивы перекладин */
+  position:absolute;
+  width:400;
+  height:300px;
+  margin:0 0 0 220px;
+}
+
+#ball{
+  position:absolute;
+  top:290px;
+  left:145px;
+  height:10px;
+  width:10px;
+  background:#000000;
+  border-radius:5px;
+}
+
+#clear{
+  clear:both;
+/* Вообще-то этот блок для того, чтобы не было обтеканий, но если раскомментировать другие свойства и тестовый код в функциях, то это место, где можно смотреть значения переменных 
+  width:400px;
+  height:50px;
+  margin-top:50px;
+  border:1px solid red;*/
+}
+
+#gravitation1, #gravitation2, #gravitation3, #gravitation4{ /* Давно заметил удивительную вещь в HTML − чем проще выглядит элемент, тем сложнее у него CSS */
+  position:absolute;
+  display:block;
+  height:40px;
+  width:50px;
+  border-radius:25px;
+  background:#c7d9ee;
+  text-decoration:none;
+  color:#000000;
+  text-align:center;
+  padding-top:10px;
+  font-size:200%;
+}
+#gravitation1{top:50px;left:60px;}
+#gravitation2{top:110;left:120px;}
+#gravitation3{top:170;left:60px;}
+#gravitation4{top:110;left:0px;}
+
+</style>
+
+
+<div id="game">
+
+<div id="settings-box">
+  <a href="#" id="gravitation1" onclick="pushButton(1);return false;">↑</a>
+  <a href="#" id="gravitation2" onclick="pushButton(2);return false;">→</a>
+  <a href="#" id="gravitation3" onclick="pushButton(3);return false;">↓</a>
+  <a href="#" id="gravitation4" onclick="pushButton(4);return false;">←</a>
+</div>
+
+
+<div id="box-perecladiny">
+</div>
+
+<div id="box-jump-ball">
+  <div id="ball"></div>
+</div>
+
+<div id="clear"></div>
+
+</div> <!-- Закрыт блок Game -->
