@@ -220,33 +220,56 @@ var setKnockPerekladina = function(left, top, width, height, number) { // Фун
     xDirection = -1; // Смена направления движения
     setReboundLoss(xSpeed); // Уменьшение скорости из-за отскока
     x = (left-10)*2 - x; // Возвращает мяч назад за границы перекладины
-    changePerekladina(number); // Запускаем функцию смены места
+    changePerekladina(number, 2); // Запускаем функцию смены места, передается номер объекта (number) и направление удара (hitDirection)
   }
   if ( xDirection === -1 && x < (left + width) && xPast >= (left + width) && y >= (top-10) && y <= (top + height) ){
     xDirection = 1;
     setReboundLoss(xSpeed);
     x = (left+width)*2 - x;
-    changePerekladina(number);
+    changePerekladina(number, 4);
   }
   if (yDirection === 1 && x >= (left-10) && x <= (left + width) && y > (top-10) && yPast <= (top-10) ){
     yDirection = -1;
     setReboundLoss(ySpeed);
     y = (top-10)*2 - y;
-    changePerekladina(number);
+    changePerekladina(number, 3);
   }
   if (yDirection === -1 && x >= (left-10) && x <= (left + width) && y < (top + height) && yPast >= (top + height) ){
     yDirection = 1;
     setReboundLoss(ySpeed);
     y = (top+height)*2 - y;
-    changePerekladina(number);
+    changePerekladina(number, 1);
   }
 }
 
-var changePerekladina = function(number) {
-  perekladinaTop[number] = Math.random()*200+20;
-  perekladinaLeft[number] = Math.random()*300+20;
+var changePerekladina = function(number, hitDirection) {
+  switch(hitDirection) { // Перебор направления удара
+    case 1: // вверх
+      var offset = Math.round(ySpeed / 20);
+      if (offset > 10) { offset = 10; }
+      perekladinaTop[number] = perekladinaTop[number] - offset;
+      break;
+    case 2: // вправо
+      var offset = Math.round(xSpeed / 20);
+      if (offset > 10) { offset = 10; }
+      perekladinaLeft[number] = perekladinaLeft[number] + offset;
+      break;
+    case 3: // вниз
+      var offset = Math.round(ySpeed / 20);
+      if (offset > 10) { offset = 10; }
+      perekladinaTop[number] = perekladinaTop[number] + offset;
+      break;
+    case 4: // влево
+            var offset = Math.round(xSpeed / 20);
+      if (offset > 10) { offset = 10; }
+      perekladinaLeft[number] = perekladinaLeft[number] - offset;
+      break;
+  }
+
   boxIdText = "";
   creatPerekladinu();
+
+  document.getElementById('clear').innerHTML = xSpeed;
 }
 
 
