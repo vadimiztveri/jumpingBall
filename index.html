@@ -31,24 +31,24 @@ perekladinaHeight[0] = 60;
 perekladinaColor[0] = "#78b654";
 
 perekladinaTop[1] = 50;
-perekladinaLeft[1] = 250;
-perekladinaWidth[1] = 8;
+perekladinaLeft[1] = 190;
+perekladinaWidth[1] = 12;
 perekladinaHeight[1] = 40;
 perekladinaColor[1] = "#999999";
 
 perekladinaTop[2] = 200;
-perekladinaLeft[2] = 50;
+perekladinaLeft[2] = 130;
 perekladinaWidth[2] = 50;
 perekladinaHeight[2] = 15;
 perekladinaColor[2] = "#a02f15";
 
-perekladinaTop[3] = 180;
+perekladinaTop[3] = 120;
 perekladinaLeft[3] = 320;
 perekladinaWidth[3] = 30;
 perekladinaHeight[3] = 20;
 perekladinaColor[3] = "#5e90d1";
 
-perekladinaTop[4] = 80;
+perekladinaTop[4] = 120;
 perekladinaLeft[4] = 60;
 perekladinaWidth[4] = 20;
 perekladinaHeight[4] = 25;
@@ -245,31 +245,71 @@ var setKnockPerekladina = function(left, top, width, height, number) { // Фун
 var changePerekladina = function(number, hitDirection) {
   switch(hitDirection) { // Перебор направления удара
     case 1: // вверх
-      var offset = Math.round(ySpeed / 20);
-      if (offset > 10) { offset = 10; }
+      var offset = Math.round(ySpeed / 20); // Получаем расстояние, на которое будет смещаться перекладина в зависимости от скорости мяча
+      if (offset > 10) { offset = 10; } // Если смещение больше 10, то не делаем больше
       perekladinaTop[number] = perekladinaTop[number] - offset;
+      if (perekladinaTop[number] < 0) { // Если перекладина уперлась в потолок, то остановилась
+        perekladinaTop[number] = 0;
+      }
+      for ( i=0 ; i < numberPerekladina ; i++ ){ // Запескаем проверку, не стоит ли сверху другая перекладина
+        if (i != number){
+          if ( perekladinaTop[number] > perekladinaTop[i] && perekladinaTop[number] < perekladinaTop[i] + perekladinaHeight[i] && perekladinaLeft[number] > perekladinaLeft[i] - perekladinaWidth[number] && perekladinaLeft[number] < perekladinaLeft[i] + perekladinaWidth[i] ) {
+            perekladinaTop[number] = perekladinaTop[i] + perekladinaHeight[i];
+          }
+        }
+      }
       break;
     case 2: // вправо
       var offset = Math.round(xSpeed / 20);
       if (offset > 10) { offset = 10; }
       perekladinaLeft[number] = perekladinaLeft[number] + offset;
+      if (perekladinaLeft[number] + perekladinaWidth[number] > 400 ) {
+        perekladinaLeft[number] = 400 - perekladinaWidth[number];
+      }
+      for ( i=0 ; i < numberPerekladina ; i++ ){ // Запескаем проверку, не стоит ли справа другая перекладина
+        if (i != number){
+          if ( perekladinaTop[number] - perekladinaHeight[number] > perekladinaTop[i] && perekladinaTop[number] < perekladinaTop[i] + perekladinaHeight[i] && perekladinaLeft[number] + perekladinaWidth[number] > perekladinaLeft[i] && perekladinaLeft[number] + perekladinaWidth[number] < perekladinaLeft[i] + perekladinaWidth[i] ) {
+            perekladinaLeft[number] = perekladinaLeft[i] - perekladinaWidth[number];
+          }
+        }
+      }
       break;
     case 3: // вниз
       var offset = Math.round(ySpeed / 20);
       if (offset > 10) { offset = 10; }
       perekladinaTop[number] = perekladinaTop[number] + offset;
+      if (perekladinaTop[number] + perekladinaHeight[number] > 300 ) {
+        perekladinaTop[number] = 300 - perekladinaHeight[number];
+      }
+      for ( i=0 ; i < numberPerekladina ; i++ ){ // Запескаем проверку, не стоит ли снизу другая перекладина
+        if (i != number){
+          if ( perekladinaTop[number] + perekladinaHeight[number] > perekladinaTop[i] && perekladinaTop[number] + perekladinaHeight[number] < perekladinaTop[i] + perekladinaHeight[i] && perekladinaLeft[number] > perekladinaLeft[i] - perekladinaWidth[number] && perekladinaLeft[number] < perekladinaLeft[i] + perekladinaWidth[i] ) {
+            perekladinaTop[number] = perekladinaTop[i] - perekladinaWidht[number];
+          }
+        }
+      }
+
       break;
     case 4: // влево
             var offset = Math.round(xSpeed / 20);
       if (offset > 10) { offset = 10; }
       perekladinaLeft[number] = perekladinaLeft[number] - offset;
+      if (perekladinaLeft[number] < 0) {
+        perekladinaLeft[number] = 0;
+      }
+      for ( i=0 ; i < numberPerekladina ; i++ ){ // Запескаем проверку, не стоит ли слева другая перекладина
+        if (i != number){
+          if ( perekladinaTop[number] - perekladinaHeight[number] > perekladinaTop[i] && perekladinaTop[number] < perekladinaTop[i] + perekladinaHeight[i] && perekladinaLeft[number] < perekladinaLeft[i] + perekladinaWidth[i] && perekladinaLeft[number] > perekladinaLeft[i] ) {
+            perekladinaLeft[number] = perekladinaLeft[i] + perekladinaWidht[i];
+          }
+        }
+      }
       break;
   }
 
   boxIdText = "";
   creatPerekladinu();
 
-  document.getElementById('clear').innerHTML = xSpeed;
 }
 
 
