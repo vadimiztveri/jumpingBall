@@ -1,9 +1,9 @@
 <script type="text/javascript">
 
-var x = 390; // место положение шарика по x
-var y = 125; // место положение шарика по y
-var xPast = 390; // место положение шарика по x в предыдущий шаг
-var yPast = 125; //место положение шарика по y в предыдущий шаг
+var x = 253; // место положение шарика по x
+var y = 290; // место положение шарика по y
+var xPast = 253; // место положение шарика по x в предыдущий шаг
+var yPast = 290; //место положение шарика по y в предыдущий шаг
 var xDirection = 1; // Направление движения по X
 var yDirection = 1; // Направление движения по Y
 
@@ -18,54 +18,91 @@ var gravitation = 3; // Объявляем переменную, которая 
 
 var jumping = 0; // Переменная, которая считает, сколько уже прыгает мячик, от 0 до 100
 
+var portal = 0; // Переменная, которая разрешает уход мяча в портал
+
 var perekladinaTop = new Array(); // Создаем массивы с данными о перекладинах
 var perekladinaLeft = new Array();
 var perekladinaWidth = new Array();
 var perekladinaHeight = new Array();
 var perekladinaColor = new Array();
+var contourTop = new Array();
+var contourLeft = new Array();
+var perekladinaStatus = new Array();
 
+
+perekladinaLeft[0] = 160;
 perekladinaTop[0] = 100;
-perekladinaLeft[0] = 140;
-perekladinaWidth[0] = 60;
-perekladinaHeight[0] = 60;
-perekladinaColor[0] = "#78b654";
+perekladinaWidth[0] = 78;
+perekladinaHeight[0] = 24;
+perekladinaColor[0] = "#6d93ea";
+contourLeft[0] = 76;
+contourTop[0] = 77;
+perekladinaStatus[0] = 1;
 
-perekladinaTop[1] = 50;
 perekladinaLeft[1] = 190;
-perekladinaWidth[1] = 12;
-perekladinaHeight[1] = 40;
-perekladinaColor[1] = "#999999";
+perekladinaTop[1] = 50;
+perekladinaWidth[1] = 93;
+perekladinaHeight[1] = 22;
+perekladinaColor[1] = "#27babc";
+contourLeft[1] = 230;
+contourTop[1] = 60;
+perekladinaStatus[1] = 1;
 
-perekladinaTop[2] = 200;
 perekladinaLeft[2] = 130;
-perekladinaWidth[2] = 50;
-perekladinaHeight[2] = 15;
-perekladinaColor[2] = "#a02f15";
+perekladinaTop[2] = 200;
+perekladinaWidth[2] = 26;
+perekladinaHeight[2] = 26;
+perekladinaColor[2] = "#0a4161";
+contourLeft[2] = 122;
+contourTop[2] = 117;
+perekladinaStatus[2] = 1;
 
-perekladinaTop[3] = 120;
+perekladinaTop[3] = 136;
 perekladinaLeft[3] = 320;
-perekladinaWidth[3] = 30;
-perekladinaHeight[3] = 20;
-perekladinaColor[3] = "#5e90d1";
+perekladinaWidth[3] = 40;
+perekladinaHeight[3] = 68;
+perekladinaColor[3] = "#ec7150";
+contourLeft[3] = 177;
+contourTop[3] = 132;
+perekladinaStatus[3] = 1;
 
 perekladinaTop[4] = 120;
 perekladinaLeft[4] = 60;
-perekladinaWidth[4] = 20;
-perekladinaHeight[4] = 25;
-perekladinaColor[4] = "#596b77";
+perekladinaWidth[4] = 81;
+perekladinaHeight[4] = 26;
+perekladinaColor[4] = "#e75e8b";
+contourLeft[4] = 209;
+contourTop[4] = 218;
+perekladinaStatus[4] = 1;
 
+var boxIdText = ""; // Строковая переменная, в которой будет HTML-текст для перекладин
 
-var numberPerekladina = 5; // Число перекладин
-
-var boxIdText = ""; // Строковая переменная, в которой будет HTML-текст
-
-var creatPerekladinu = function(){
-  for ( i=0 ; i < numberPerekladina ; i++ ) {
-    boxIdText = boxIdText + "<div style='position:absolute;top:" + perekladinaTop[i] + "px;left:" + perekladinaLeft[i] + "px;width:"+ perekladinaWidth[i] +"px;height:"+ perekladinaHeight[i] +"px;background:"+ perekladinaColor[i] +"'></div>";
+var creatPerekladinu = function(){ // Функция, которая создает HTML-текст, который перерисрвывает перекладины
+  var countStatus = 0; // Переменная, которая считает, сколько перекладин стоят на месте
+  for ( i=0 ; i < perekladinaTop.length ; i++ ) {
+  	if ( perekladinaStatus[i] === 1 ) {
+  	  var bgColor = "#888888"; // Серый цвет − перекладина стоит на месте
+  	} else {
+  	  var bgColor = perekladinaColor[i]; // Заданный цвет переклидины − она еще не на месте
+  	}
+    boxIdText = boxIdText + "<div style='position:absolute;top:" + perekladinaTop[i] + "px;left:" + perekladinaLeft[i] + "px;width:"+ perekladinaWidth[i] +"px;height:"+ perekladinaHeight[i] +"px;background:"+ bgColor +"'></div>"; // Собираем текст
+  countStatus = countStatus + perekladinaStatus[i]; // Прибавляем число перекладин, которые уже на месте
+  }
+  if (countStatus === perekladinaTop.length) { // Если все перекладины на месте, то открывается портал
+    document.getElementById('portal').style.display = "block";
+    portal = 1;
   }
   document.getElementById('box-perecladiny').innerHTML = boxIdText;
 }
 
+var boxIdContour = ""; // Строковая переменная, в которой будет HTML-текст для контуров
+
+var creatContour = function(){
+  for ( i=0 ; i < perekladinaTop.length ; i++ ) {
+    boxIdContour = boxIdContour + "<div id='contour" + i + "' style='padding:4px;border-radius:5px;position:absolute;top:" + contourTop[i] + "px;left:" + contourLeft[i] + "px;width:"+ perekladinaWidth[i] +"px;height:"+ perekladinaHeight[i] +"px;border-style:dashed;border-width:2px;border-color:#ffffff;'></div>";
+  }
+  document.getElementById('box-contour').innerHTML = boxIdContour;
+}
 
 
 
@@ -94,7 +131,7 @@ var movieBall = function() { // Основная функция, которая 
     }
     
     // Если мячик попал на прекладину
-    for ( i = 0 ; i < numberPerekladina ; i++ ) {
+    for ( i = 0 ; i < perekladinaTop.length ; i++ ) {
       setKnockPerekladina(perekladinaLeft[i], perekladinaTop[i], perekladinaWidth[i], perekladinaHeight[i], i);
     }
     
@@ -155,9 +192,16 @@ var movieBall = function() { // Основная функция, которая 
         if ( ySpeed < 5 ) {ySpeed = 0;}
       }
     }
-  
+    
     if (xSpeed+ySpeed < 1 && x - xPast === 0 && y - yPast === 0){ // Если мяч стоит на месте и скорости равны нулю, то движение прекращается
       stopJumpBall();
+    }
+    
+    if ( portal === 1 ) { // Проверяем, может ли мяч уходить в портал
+      if ( x > 248 && x < 260 && y > 97 && y < 109 ) {
+        stopJumpBall();
+        document.getElementById('congr').style.display = "block";
+      }
     }
     
   }, 10);
@@ -169,7 +213,7 @@ var stopJumpBall = function(){ // Функция, которая останав�
 }
 
 
-var colorButtonGrav = function(colorGrav){ // Функция для того, чтобы менять цвет кнопки графитации, которая сейчас нажата
+var colorButtonGrav = function(colorGrav){ // Функция для того, чтобы менять цвет кнопки гравитации, которая сейчас нажата
   for ( i = 1 ; i < 5 ; i++ ){
   	nameI = "gravitation" + i;
     if ( i === colorGrav ) {
@@ -193,8 +237,8 @@ var pushButton = function(grav){
 document.onkeydown = function checkKeyCode(event){ // Функция, которая берет события клавиатуры
   var keyCode; // Эта переменная будет получать код клавиши
   if(!event) {var event = window.event;} // Если ничего не нажато
-  if (event.keyCode) {keyCode = event.keyCode;} // IE
-  else if(event.which) {keyCode = event.which;} // all browsers
+  if (event.keyCode) {keyCode = event.keyCode;} // Для IE
+  else if(event.which) {keyCode = event.which;} // Для нормальных браузеров
   switch(keyCode) { // Перебор клавиш
     case 37: // влево
       pushButton(4);
@@ -220,25 +264,33 @@ var setKnockPerekladina = function(left, top, width, height, number) { // Фун
     xDirection = -1; // Смена направления движения
     setReboundLoss(xSpeed); // Уменьшение скорости из-за отскока
     x = (left-10)*2 - x; // Возвращает мяч назад за границы перекладины
-    changePerekladina(number, 2); // Запускаем функцию смены места, передается номер объекта (number) и направление удара (hitDirection)
+    if (perekladinaStatus[number] === 0 ) {
+      changePerekladina(number, 2); // Запускаем функцию смены места, передается номер объекта (number) и направление удара (hitDirection)
+    }
   }
   if ( xDirection === -1 && x < (left + width) && xPast >= (left + width) && y >= (top-10) && y <= (top + height) ){ // Если удар справа
     xDirection = 1;
     setReboundLoss(xSpeed);
     x = (left+width)*2 - x;
-    changePerekladina(number, 4);
+    if (perekladinaStatus[number] === 0 ) {
+      changePerekladina(number, 4);
+    }
   }
   if (yDirection === 1 && x >= (left-10) && x <= (left + width) && y > (top-10) && yPast <= (top-10) ){ // Если удар сверху
     yDirection = -1;
     setReboundLoss(ySpeed);
     y = (top-10)*2 - y;
-    changePerekladina(number, 3);
+    if (perekladinaStatus[number] === 0 ) {
+      changePerekladina(number, 3);
+    }
   }
   if (yDirection === -1 && x >= (left-10) && x <= (left + width) && y < (top + height) && yPast >= (top + height) ){ // Если удар снизу
     yDirection = 1;
     setReboundLoss(ySpeed);
     y = (top+height)*2 - y;
-    changePerekladina(number, 1);
+    if (perekladinaStatus[number] === 0 ) {
+      changePerekladina(number, 1);
+    }
   }
 }
 
@@ -251,7 +303,7 @@ var changePerekladina = function(number, hitDirection) {
       if (perekladinaTop[number] < 0) { // Если перекладина уперлась в потолок, то остановилась
         perekladinaTop[number] = 0;
       }
-      for ( i=0 ; i < numberPerekladina ; i++ ){ // Запускаем проверку, не стоит ли сверху другая перекладина
+      for ( i=0 ; i < perekladinaTop.length ; i++ ){ // Запускаем проверку, не стоит ли сверху другая перекладина
         if (i != number){
           if ( perekladinaTop[number] > perekladinaTop[i] && perekladinaTop[number] < perekladinaTop[i] + perekladinaHeight[i] && perekladinaLeft[number] > perekladinaLeft[i] - perekladinaWidth[number] && perekladinaLeft[number] < perekladinaLeft[i] + perekladinaWidth[i] ) {
             perekladinaTop[number] = perekladinaTop[i] + perekladinaHeight[i];
@@ -266,7 +318,7 @@ var changePerekladina = function(number, hitDirection) {
       if (perekladinaLeft[number] + perekladinaWidth[number] > 400 ) {
         perekladinaLeft[number] = 400 - perekladinaWidth[number];
       }
-      for ( i=0 ; i < numberPerekladina ; i++ ){ // Запускаем проверку, не стоит ли справа другая перекладина
+      for ( i=0 ; i < perekladinaTop.length ; i++ ){ // Запускаем проверку, не стоит ли справа другая перекладина
         if (i != number){
           if ( perekladinaLeft[number] + perekladinaWidth[number] > perekladinaLeft[i] && perekladinaLeft[number] + perekladinaWidth[number] < perekladinaLeft[i] + perekladinaWidth[i] && perekladinaTop[number] > perekladinaTop[i] - perekladinaHeight[number] && perekladinaTop[number] < perekladinaTop[i] + perekladinaHeight[i] ) {
             perekladinaLeft[number] = perekladinaLeft[i] - perekladinaWidth[number];
@@ -281,7 +333,7 @@ var changePerekladina = function(number, hitDirection) {
       if (perekladinaTop[number] + perekladinaHeight[number] > 300 ) {
         perekladinaTop[number] = 300 - perekladinaHeight[number];
       }
-      for ( i=0 ; i < numberPerekladina ; i++ ){ // Запескаем проверку, не стоит ли снизу другая перекладина
+      for ( i=0 ; i < perekladinaTop.length ; i++ ){ // Запескаем проверку, не стоит ли снизу другая перекладина
         if (i != number){
           if ( perekladinaTop[number] + perekladinaHeight[number] > perekladinaTop[i] && perekladinaTop[number] + perekladinaHeight[number] < perekladinaTop[i] + perekladinaHeight[i] && perekladinaLeft[number] + perekladinaWidth[number] > perekladinaLeft[i] && perekladinaLeft[number] < perekladinaLeft[i] + perekladinaWidth[i] ) {
             perekladinaTop[number] = perekladinaTop[i] - perekladinaHeight[number];
@@ -296,7 +348,7 @@ var changePerekladina = function(number, hitDirection) {
       if (perekladinaLeft[number] < 0) {
         perekladinaLeft[number] = 0;
       }
-      for ( i=0 ; i < numberPerekladina ; i++ ){ // Запескаем проверку, не стоит ли слева другая перекладина
+      for ( i=0 ; i < perekladinaTop.length ; i++ ){ // Запескаем проверку, не стоит ли слева другая перекладина
         if (i != number){
           if ( perekladinaLeft[number] < perekladinaLeft[i] + perekladinaWidth[i] && perekladinaLeft[number] > perekladinaLeft[i] && perekladinaTop[number] + perekladinaHeight[number] > perekladinaTop[i] && perekladinaTop[number] < perekladinaTop[i] + perekladinaHeight[i]) {
             perekladinaLeft[number] = perekladinaLeft[i] + perekladinaWidth[i];
@@ -306,9 +358,28 @@ var changePerekladina = function(number, hitDirection) {
       break;
   }
   boxIdText = "";
-  creatPerekladinu();
+  inContour(number); // Запускаем проверку, не находится ли блок в контуре
+  creatPerekladinu(); // Перерисовка перекладин
+  setContourBlink(number); // Вызываем функцию, которая высвечивает контур
 }
 
+var inContour = function(number) { // Функция, которая проверяет, попала ли перекладина в контур
+  if ( perekladinaLeft[number] > contourLeft[number] && perekladinaLeft[number] < contourLeft[number]+12 && perekladinaTop[number] > contourTop[number] && perekladinaTop[number] < contourTop[number]+12  ) {
+    perekladinaStatus[number] = 1; // Перекладина получает статус вставшей на месте
+    perekladinaLeft[number] = contourLeft[number] + 6; // Перекладина встает на нужное место
+    perekladinaTop[number] = contourTop[number] + 6;
+  }
+}
+
+var setContourBlink = function(number) { // Функция, которая высвечивает контур, в который должна попасть перекладина
+  var id = "contour" + number; // Получаем ID контура блока
+  setColorBorder(id, perekladinaColor[number]); // Даем цвет бордера контуру
+  setTimeout(function() { // Отключаем цвет бордера через секунду
+    setColorBorder(id, "#FFFFFF");
+  }, 1000);
+}
+
+var setColorBorder = function(id, color) { document.getElementById(id).style.borderColor = color; }
 
 </script>
 
@@ -338,16 +409,46 @@ var changePerekladina = function(number, hitDirection) {
   width:400;
   height:300px;
   margin:0 0 0 220px;
+  background:transparent;
+}
+
+#box-contour{ /* Еще один блок снизу, в котором располагаются контуры */
+  position:absolute;
+  width:400;
+  height:300px;
+  margin:0 0 0 220px;
+  background:transparent;
 }
 
 #ball{
   position:absolute;
-  top:125px;
-  left:390px;
+  top:290px;
+  left:160px;
   height:10px;
   width:10px;
   background:#000000;
   border-radius:5px;
+}
+
+#portal{
+  position:absolute;
+  display:none;
+  width:20px;
+  height:20px;
+  top:97px;
+  left:248px;
+  background:transparent url('portal.png') no-repeat;
+}
+
+#congr{
+  position:absolute;
+  display:none;
+  width:300px;
+  height:30px;
+  top:250px;
+  left:50px;
+  font-size:150%;
+  color:#7f6b1d;
 }
 
 #clear{clear:both; margin:20px 0 30px 0;}
@@ -394,12 +495,13 @@ h2{clear:both;}
   <a href="#" id="gravitation4" onclick="pushButton(4);return false;">←</a>
 </div>
 
-
-<div id="box-perecladiny">
-</div>
+<div id="box-contour"></div>
+<div id="box-perecladiny"></div>
 
 <div id="box-jump-ball">
+  <div id="portal"></div>
   <div id="ball"></div>
+  <div id="congr">Поздравляю, это победа!</div>
 </div>
 
 <div id="clear">
