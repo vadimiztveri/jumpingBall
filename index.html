@@ -37,16 +37,16 @@ perekladinaHeight[0] = 24;
 perekladinaColor[0] = "#6d93ea";
 contourLeft[0] = 76;
 contourTop[0] = 77;
-perekladinaStatus[0] = 1;
+perekladinaStatus[0] = 0;
 
 perekladinaLeft[1] = 190;
-perekladinaTop[1] = 50;
+perekladinaTop[1] = 150;
 perekladinaWidth[1] = 93;
 perekladinaHeight[1] = 22;
 perekladinaColor[1] = "#27babc";
 contourLeft[1] = 230;
 contourTop[1] = 60;
-perekladinaStatus[1] = 1;
+perekladinaStatus[1] = 0;
 
 perekladinaLeft[2] = 130;
 perekladinaTop[2] = 200;
@@ -55,16 +55,16 @@ perekladinaHeight[2] = 26;
 perekladinaColor[2] = "#0a4161";
 contourLeft[2] = 122;
 contourTop[2] = 117;
-perekladinaStatus[2] = 1;
+perekladinaStatus[2] = 0;
 
-perekladinaTop[3] = 136;
+perekladinaTop[3] = 120;
 perekladinaLeft[3] = 320;
 perekladinaWidth[3] = 40;
 perekladinaHeight[3] = 68;
 perekladinaColor[3] = "#ec7150";
 contourLeft[3] = 177;
 contourTop[3] = 132;
-perekladinaStatus[3] = 1;
+perekladinaStatus[3] = 0;
 
 perekladinaTop[4] = 120;
 perekladinaLeft[4] = 60;
@@ -73,7 +73,7 @@ perekladinaHeight[4] = 26;
 perekladinaColor[4] = "#e75e8b";
 contourLeft[4] = 209;
 contourTop[4] = 218;
-perekladinaStatus[4] = 1;
+perekladinaStatus[4] = 0;
 
 var boxIdText = ""; // Строковая переменная, в которой будет HTML-текст для перекладин
 
@@ -85,7 +85,7 @@ var creatPerekladinu = function(){ // Функция, которая созда�
   	} else {
   	  var bgColor = perekladinaColor[i]; // Заданный цвет переклидины − она еще не на месте
   	}
-    boxIdText = boxIdText + "<div style='position:absolute;top:" + perekladinaTop[i] + "px;left:" + perekladinaLeft[i] + "px;width:"+ perekladinaWidth[i] +"px;height:"+ perekladinaHeight[i] +"px;background:"+ bgColor +"'></div>"; // Собираем текст
+    boxIdText = boxIdText + "<div id='perekladina" + i + "' style='position:absolute;top:" + perekladinaTop[i] + "px;left:" + perekladinaLeft[i] + "px;width:"+ perekladinaWidth[i] +"px;height:"+ perekladinaHeight[i] +"px;background:"+ bgColor +"'></div>"; // Собираем текст
   countStatus = countStatus + perekladinaStatus[i]; // Прибавляем число перекладин, которые уже на месте
   }
   if (countStatus === perekladinaTop.length) { // Если все перекладины на месте, то открывается портал
@@ -97,7 +97,7 @@ var creatPerekladinu = function(){ // Функция, которая созда�
 
 var boxIdContour = ""; // Строковая переменная, в которой будет HTML-текст для контуров
 
-var creatContour = function(){
+var creatContour = function(){ // Функция, которая расставляет контуры, пока невидимые
   for ( i=0 ; i < perekladinaTop.length ; i++ ) {
     boxIdContour = boxIdContour + "<div id='contour" + i + "' style='padding:4px;border-radius:5px;position:absolute;top:" + contourTop[i] + "px;left:" + contourLeft[i] + "px;width:"+ perekladinaWidth[i] +"px;height:"+ perekladinaHeight[i] +"px;border-style:dashed;border-width:2px;border-color:#ffffff;'></div>";
   }
@@ -201,6 +201,10 @@ var movieBall = function() { // Основная функция, которая 
       if ( x > 248 && x < 260 && y > 97 && y < 109 ) {
         stopJumpBall();
         document.getElementById('congr').style.display = "block";
+        for ( i = 0 ; i < perekladinaTop.length ; i ++ ) {
+          var id = "perekladina" + i;
+          document.getElementById(id).style.background = perekladinaColor[i];
+        }
       }
     }
     
@@ -423,7 +427,7 @@ var setColorBorder = function(id, color) { document.getElementById(id).style.bor
 #ball{
   position:absolute;
   top:290px;
-  left:160px;
+  left:253px;
   height:10px;
   width:10px;
   background:#000000;
@@ -445,7 +449,7 @@ var setColorBorder = function(id, color) { document.getElementById(id).style.bor
   display:none;
   width:300px;
   height:30px;
-  top:250px;
+  top:270px;
   left:50px;
   font-size:150%;
   color:#7f6b1d;
