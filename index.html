@@ -1,17 +1,57 @@
 <script type="text/javascript">
 
-var x = 253; // место положение шарика по x
+///////////////////////////
+// Блок базовых настроек
+//////////////////////////
+
+var x = 0; // место положение шарика по x
 var y = 290; // место положение шарика по y
-var xPast = 253; // место положение шарика по x в предыдущий шаг
+var xPast = 0; // место положение шарика по x в предыдущий шаг
 var yPast = 290; //место положение шарика по y в предыдущий шаг
 var xDirection = 1; // Направление движения по X
 var yDirection = 1; // Направление движения по Y
 
-var xSpeed = 0; // Скорость начального вылета по X
-var ySpeed = 0; // Скорость начального вылета по Y
+var xSpeed; // Скорость начального вылета по X
+var ySpeed; // Скорость начального вылета по Y
+var speed = 170; // Скорость начального вылета по X
+var degree = 63; // угол вылета
+xSpeed = Math.cos(degree/60)*speed;
+ySpeed = Math.sin(degree/60)*speed;
 
-var rebound = 100; // Потери энергии при отскоке
-var airWindage = 100; // Сопротивление воздуха
+var rebound = 25; // Потери энергии при отскоке
+var airWindage = 30; // Сопротивление воздуха
+
+var lavel = 1; // Переменная, которая определяет уровень
+
+
+var xRebound = function(k) {return Math.ceil(k*4)+1;} // Определение координат ползунка по значению
+
+var faderSetting = function (){
+  document.getElementById('rebound-percent').innerHTML = rebound;
+  document.getElementById('rebound-percent').style.left = xRebound(rebound);
+  document.getElementById('air-percent').innerHTML = airWindage;
+  document.getElementById('air-percent').style.left = xRebound(airWindage);
+  document.getElementById('speed-percent').innerHTML = speed;
+  speedFader = speed/2.5-20;
+  document.getElementById('speed-percent').style.left = speedFader;
+  document.getElementById('degree-percent').innerHTML = degree;
+  degreeFader = degree*1.9-4;
+  document.getElementById('degree-percent').style.left = degreeFader;
+}
+
+var resetBoll = function () {  // Сброс параметров и возврат мячика на исходную
+  x = 0;
+  y = 288;
+  xDirection = 1;
+  yDirection = -1;
+  document.getElementById('ball').style.left = 0;
+  document.getElementById('ball').style.top = 288;
+  xSpeed = Math.cos(degree/60)*speed;
+  ySpeed = Math.sin(degree/60)*speed;
+  document.getElementById('close').style.display = 'none';
+}
+
+var movieFader; // Объявляем глобальныю, отвечающую за движение ползунка
 
 var jumpBall; // Объявляем переменную, содержащую функцию движения, нужна для того, чтобы остановить через clearInterval(jumpBall)
 var gravitation = 3; // Объявляем переменную, которая отвечает за гравитацию, возможные значения: Вверх 1, Вправо 2, Вниз 3, Влево 4.
@@ -19,6 +59,7 @@ var gravitation = 3; // Объявляем переменную, которая 
 var jumping = 0; // Переменная, которая считает, сколько уже прыгает мячик, от 0 до 100
 
 var portal = 0; // Переменная, которая разрешает уход мяча в портал
+
 
 var perekladinaTop = new Array(); // Создаем массивы с данными о перекладинах
 var perekladinaLeft = new Array();
@@ -30,50 +71,66 @@ var contourLeft = new Array();
 var perekladinaStatus = new Array();
 
 
-perekladinaLeft[0] = 160;
-perekladinaTop[0] = 100;
-perekladinaWidth[0] = 78;
-perekladinaHeight[0] = 24;
-perekladinaColor[0] = "#6d93ea";
-contourLeft[0] = 76;
-contourTop[0] = 77;
-perekladinaStatus[0] = 0;
 
-perekladinaLeft[1] = 190;
-perekladinaTop[1] = 150;
-perekladinaWidth[1] = 93;
-perekladinaHeight[1] = 22;
-perekladinaColor[1] = "#27babc";
-contourLeft[1] = 230;
-contourTop[1] = 60;
-perekladinaStatus[1] = 0;
+var level1Setup = function() { // Передаем данные для перекладины первого уровня
+  perekladinaLeft[0] = 240;
+  perekladinaTop[0] = 80;
+  perekladinaWidth[0] = 8;
+  perekladinaHeight[0] = 50;
+  perekladinaColor[0] = "#6d93ea";
+  contourLeft[0] = 250;
+  contourTop[0] = 50;
+  perekladinaStatus[0] = 1;
+}
 
-perekladinaLeft[2] = 130;
-perekladinaTop[2] = 200;
-perekladinaWidth[2] = 26;
-perekladinaHeight[2] = 26;
-perekladinaColor[2] = "#0a4161";
-contourLeft[2] = 122;
-contourTop[2] = 117;
-perekladinaStatus[2] = 0;
 
-perekladinaTop[3] = 120;
-perekladinaLeft[3] = 320;
-perekladinaWidth[3] = 40;
-perekladinaHeight[3] = 68;
-perekladinaColor[3] = "#ec7150";
-contourLeft[3] = 177;
-contourTop[3] = 132;
-perekladinaStatus[3] = 0;
 
-perekladinaTop[4] = 120;
-perekladinaLeft[4] = 60;
-perekladinaWidth[4] = 81;
-perekladinaHeight[4] = 26;
-perekladinaColor[4] = "#e75e8b";
-contourLeft[4] = 209;
-contourTop[4] = 218;
-perekladinaStatus[4] = 0;
+var level2Setup = function() { // Передаем данные для перекладин второго уровня
+  perekladinaLeft[0] = 160;
+  perekladinaTop[0] = 100;
+  perekladinaWidth[0] = 78;
+  perekladinaHeight[0] = 24;
+  perekladinaColor[0] = "#6d93ea";
+  contourLeft[0] = 76;
+  contourTop[0] = 77;
+  perekladinaStatus[0] = 0;
+
+  perekladinaLeft[1] = 190;
+  perekladinaTop[1] = 150;
+  perekladinaWidth[1] = 93;
+  perekladinaHeight[1] = 22;
+  perekladinaColor[1] = "#27babc";
+  contourLeft[1] = 230;
+  contourTop[1] = 60;
+  perekladinaStatus[1] = 0;
+
+  perekladinaLeft[2] = 130;
+  perekladinaTop[2] = 200;
+  perekladinaWidth[2] = 26;
+  perekladinaHeight[2] = 26;
+  perekladinaColor[2] = "#0a4161";
+  contourLeft[2] = 122;
+  contourTop[2] = 117;
+  perekladinaStatus[2] = 0;
+
+  perekladinaTop[3] = 120;
+  perekladinaLeft[3] = 320;
+  perekladinaWidth[3] = 40;
+  perekladinaHeight[3] = 68;
+  perekladinaColor[3] = "#ec7150";
+  contourLeft[3] = 177;
+  contourTop[3] = 132;
+  perekladinaStatus[3] = 0;
+
+  perekladinaTop[4] = 120;
+  perekladinaLeft[4] = 60;
+  perekladinaWidth[4] = 81;
+  perekladinaHeight[4] = 26;
+  perekladinaColor[4] = "#e75e8b";
+  contourLeft[4] = 209;
+  contourTop[4] = 218;
+  perekladinaStatus[4] = 0;
+}
 
 var boxIdText = ""; // Строковая переменная, в которой будет HTML-текст для перекладин
 
@@ -106,7 +163,18 @@ var creatContour = function(){ // Функция, которая расстав�
 
 
 
+///////////////////////////////////////////////
+// Базовые функции, отвечающие за движение мяча
+///////////////////////////////////////////////
+
 var movieBall = function() { // Основная функция, которая отвечает за движение мячика
+
+  if ( lavel === 1 ) {
+    document.getElementById('close').style.display = 'block'; // Перекрываются бегунки
+    document.getElementById('start').style.display = 'none'; // Выключается кнопка «Старт»
+    document.getElementById('stop').style.display = 'inline'; // Включается кнопка «Стоп»
+  }
+
 
   jumpBall = setInterval(function(){
     if( x > 390 && xPast <= 390 ){ // Чтобы проверить, что шарик реально стремиться пролететь через стену, нужно видеть, что предыдущее место шарика было до стены, а следующее через стену
@@ -197,13 +265,17 @@ var movieBall = function() { // Основная функция, которая 
       stopJumpBall();
     }
     
-    if ( portal === 1 ) { // Проверяем, может ли мяч уходить в портал
+    if ( portal === 1 ) { // Проверяем, попал ли мяч в портал
       if ( x > 248 && x < 260 && y > 97 && y < 109 ) {
         stopJumpBall();
-        document.getElementById('congr').style.display = "block";
-        for ( i = 0 ; i < perekladinaTop.length ; i ++ ) {
-          var id = "perekladina" + i;
-          document.getElementById(id).style.background = perekladinaColor[i];
+        if ( lavel === 1 ) { changeLavel2(); }
+        
+        if ( lavel === 2 ) {
+          document.getElementById('congr').style.display = "block";
+          for ( i = 0 ; i < perekladinaTop.length ; i ++ ) {
+            var id = "perekladina" + i;
+            document.getElementById(id).style.background = perekladinaColor[i];
+          }
         }
       }
     }
@@ -214,7 +286,10 @@ var movieBall = function() { // Основная функция, которая 
 var stopJumpBall = function(){ // Функция, которая останавливает движение мяча
   clearInterval(jumpBall);
   jumping = 0;
+  document.getElementById('stop').style.display = 'none';
+  document.getElementById('start').style.display = 'inline';
 }
+
 
 
 var colorButtonGrav = function(colorGrav){ // Функция для того, чтобы менять цвет кнопки гравитации, которая сейчас нажата
@@ -385,15 +460,236 @@ var setContourBlink = function(number) { // Функция, которая вы�
 
 var setColorBorder = function(id, color) { document.getElementById(id).style.borderColor = color; }
 
+var changeLavel2 = function () {
+  document.getElementById('close').style.display = "block";
+  document.getElementById('close').style.background = "#ffffff";
+  document.getElementById('close').style.height = 300;
+  document.getElementById('close').style.opacity = 0;
+  var i = 0 ;
+  Lavel2 = setInterval(function(){
+    document.getElementById('close').style.opacity = i;
+    i = i + 0.01 ;
+    if ( i === 1 ) {
+      clearInterval(Lavel2);
+      changeLavel21();
+    }
+  }, 20);
+  setTimeout(function() { // Переходим к следующему шагу через временной интервал
+    changeLavel21();
+  }, 3000);
+}
+
+var changeLavel21 = function () {
+  document.getElementById('settings-box1').style.display = "none";
+  document.getElementById('settings-box2').style.display = "block";
+  var i = 1 ;
+  Lavel21 = setInterval(function(){
+    document.getElementById('close').style.opacity = i;
+    i = i - 0.01 ;
+    if ( i === 0 ) {
+      clearInterval(Lavel2);
+    }
+  }, 20);
+  setTimeout(function() { // Переходим к следующему шагу через временной интервал
+    changeLavel22();
+  }, 3000);
+}
+
+var changeLavel22 = function () {
+  document.getElementById('close').style.display = "none";
+  document.getElementById('portal').style.display = "none";
+  document.getElementById('box-perecladiny').innerHTML = "";
+  level2Setup();
+  creatPerekladinu();
+  creatContour();
+  lavel = 2;
+  portal = 0;
+  movieBall();
+}
+
+//////////////////////////////
+// Блок управления бегунками
+//////////////////////////////
+
+var mouseMove = function ( e, dv ) {
+    // Для браузера IE
+  if (document.all)  { 
+    xMouse = event.x + document.body.scrollLeft;
+    // Для остальных браузеров
+  } else {
+    xMouse = e.pageX; // Координата X курсора
+  }
+  var punktir = xMouse - 30;
+
+  var div = dv + "-punktir";
+  document.getElementById(div).style.left = punktir;
+  document.getElementById(div).style.display = 'block';
+  
+//  document.getElementById('clear').innerHTML = xMouse;
+}
+
+var stopMouseMove = function (tm) {
+  var div = tm + "-punktir" ;
+  document.getElementById(div).style.display = 'none';
+}
+
+var mouseMoveDegree = function ( e ) {
+    // Для браузера IE
+  if (document.all)  { 
+    xMouse = event.x + document.body.scrollLeft;
+    // Для остальных браузеров
+  } else {
+    xMouse = e.pageX; // Координата X курсора
+  }
+  var degreeTemp = Math.floor((xMouse - 36)/1.9);
+  if ( degreeTemp < 5 ) { degreeTemp = 5;}
+  if ( degreeTemp > 85 ) { degreeTemp = 85;}
+
+
+  document.getElementById('degree-block').style.display="block";
+//  document.getElementById('degree-block').innerHTML=degreeTemp;
+  
+  var koord = '';
+  var koordZ = '';
+
+  var j = 0;
+
+  for ( i=180 ; i>40 ; i-- ) {
+    var xKoord = (Math.cos(degreeTemp/57.5)*i)/4 +5;
+    var yKoord = (Math.sin(degreeTemp/57.5)*i*-1)/4 +67;
+    var xOpacity = Math.abs(xKoord - Math.round(xKoord));
+    var yOpacity = Math.abs(yKoord - Math.round(yKoord));
+    var Opacity = Math.pow(Math.sqrt(xOpacity*xOpacity + yOpacity*yOpacity), 2);
+    koord = koord + "<div style='width:1px;height:1px;background:#777777;position:absolute;top:" + yKoord + ";left:" + xKoord + ";opacity:" + Opacity + ";'></div>";
+    if ( j < 40 ) {
+      for ( m = 0 ; m < j/10 ; m++ ){
+        xKoordPlus = xKoord + Math.cos((degreeTemp-90)/57.5)*m;
+        yKoordPlus = yKoord + Math.sin((degreeTemp-90)/57.5)*m*-1;
+        xOpacity = Math.abs(xKoord - Math.round(xKoord));
+        yOpacity = Math.abs(yKoord - Math.round(yKoord));
+        Opacity = Math.pow(Math.sqrt(xOpacity*xOpacity + yOpacity*yOpacity), 2);
+        koord = koord + "<div ig='arrow" + i + "' style='width:1px;height:1px;background:#000000;position:absolute;top:" + yKoordPlus + ";left:" + xKoordPlus + ";opacity:" + Opacity + ";'></div>";
+        xKoordMinus= xKoord - Math.cos((degreeTemp-90)/57.5)*m;
+        yKoordMinus= yKoord - Math.sin((degreeTemp-90)/57.5)*m*-1;
+        xOpacity = Math.abs(xKoord - Math.round(xKoord));
+        yOpacity = Math.abs(yKoord - Math.round(yKoord));
+        Opacity = Math.pow(Math.sqrt(xOpacity*xOpacity + yOpacity*yOpacity), 2);
+        koord = koord + "<div ig='arrow" + i + "' style='width:1px;height:1px;background:#000000;position:absolute;top:" + yKoordMinus + ";left:" + xKoordMinus + ";opacity:" + Opacity + ";'></div>";
+      }
+      j++;
+    }
+
+  }
+  document.getElementById('degree-block').innerHTML=koord;
+}
+
+var stopMouseMoveDegree = function (tm) {
+  document.getElementById('degree-block').style.display = "none";
+}
+
+var faderPlugRebound = function () {  // Получение значения отскока
+   rebound = Math.floor((xMouse - 32)/4);
+   if ( rebound < 1 ) { rebound = 1;}
+   if ( rebound > 40 ) { rebound = 40;}
+    document.getElementById('rebound-percent').innerHTML = rebound;
+    var faderNow = rebound*4 - 4;
+    document.getElementById('rebound-percent').style.left = faderNow;
+}
+
+var faderPlugAir = function () {  // Получение значения сопротивления воздуха
+   airWindage = Math.floor((xMouse - 32)/4);
+   if ( airWindage < 1 ) { airWindage = 1;}
+   if ( airWindage > 40 ) { airWindage = 40;}
+    document.getElementById('air-percent').innerHTML = airWindage;
+    var faderNow = airWindage*4 - 4;
+    document.getElementById('air-percent').style.left = faderNow;
+}
+
+var faderPlugSpeed = function () {  // Получение значения сопротивления воздуха
+  speed = Math.floor((xMouse -17) * 2.5);
+  if ( speed < 50 ) { speed = 50;}
+  if ( speed > 400 ) { speed = 400;}
+  document.getElementById('speed-percent').innerHTML = speed;
+  var faderNow = speed/2.5-20;
+  document.getElementById('speed-percent').style.left = faderNow;
+
+  xSpeed = Math.cos(degree/60)*speed;
+  ySpeed = Math.sin(degree/60)*speed;
+}
+
+
+var faderPlugDegree = function () {  // Получение угла вылета
+  degree = Math.floor((xMouse - 36)/1.9);
+  if ( degree < 5 ) { degree = 5;}
+  if ( degree > 85 ) { degree = 85;}
+  document.getElementById('degree-percent').innerHTML = degree;
+  var faderNow = degree*1.9 - 4;
+  document.getElementById('degree-percent').style.left = faderNow;
+
+  xSpeed = Math.cos(degree/60)*speed;
+  ySpeed = Math.sin(degree/60)*speed;
+}
+
+
+
 </script>
 
 
 
 <style>
+
 #game{position:relative;}
 
-#settings-box{
+#close{
+  position:absolute;
+  display:none;
+  width:200px;
+  height:250px;
+  top:0;
+  left:0;
+  background:transparent url('close-bg.png') repeat;
+}
+
+#settings-box1{
+  position:ablolute;
+  width:200px;
+  height:300px;
+  float:left;
+}
+#settings-box1 p{padding:0 20px 15px 0;}
+#settings-box1 input{width:100px;}
+#settings-box1 p{font-size:75%;padding:0 0 12px 0;margin:0;}
+#rebound-fader, #air-fader, #speed-fader, #degree-fader {
   position:relative;
+  margin:0;
+  width:170px;
+  height:35px;
+  cursor:pointer;
+  background:transparent url('fader-bg.png') no-repeat 3px bottom;
+}
+#rebound-percent, #air-percent, #speed-percent, #degree-percent{
+  position:absolute;
+  width:15px;
+  height:35px;
+  top:0;
+  font-size:10px;
+  text-align:right;
+  background:transparent url('fader.png') no-repeat left bottom;
+}
+#rebound-punktir, #air-punktir, #speed-punktir, #degree-punktir{
+  position:absolute;
+  width:1px;
+  height:35px;
+  top:0;
+  cursor:pointer;
+  display:none;
+  border-left:1px dashed #bfcad9;
+}
+
+
+#settings-box2{
+  position:ablolute;
+  display:none;
   width:200px;
   height:300px;
   float:left;
@@ -427,11 +723,20 @@ var setColorBorder = function(id, color) { document.getElementById(id).style.bor
 #ball{
   position:absolute;
   top:290px;
-  left:253px;
+  left:0px;
   height:10px;
   width:10px;
   background:#000000;
   border-radius:5px;
+}
+
+#degree-block{
+  position:absolute;
+  display:none;
+  width:75px;
+  height:75px;
+  top:225px;
+  left:0;
 }
 
 #portal{
@@ -487,12 +792,54 @@ h2{clear:both;}
 #gravitation3{top:170;left:60px;}
 #gravitation4{top:110;left:0px;}
 
+#start{display:inline;}
+#stop{display:none;}
+
+button{width:60px;font-size:80%;text-align:center;}
+
 </style>
 
 
 <div id="game">
 
-<div id="settings-box">
+
+<div id="settings-box1"><!-- Блок управления первого уровня -->
+
+<div id="rebound-fader" onMouseMove="mouseMove(event,'rebound')" onMouseOut="stopMouseMove('rebound')" onclick="faderPlugRebound()">
+  <div id="rebound-percent"></div>
+  <div id="rebound-punktir"></div>
+</div>
+<p>Потери энергии при отскоке.</p>
+
+<div id="air-fader" onMouseMove="mouseMove(event,'air')" onMouseOut="stopMouseMove('air')" onclick="faderPlugAir()">
+  <div id="air-percent"></div>
+  <div id="air-punktir"></div>
+</div>
+<p>Сопротивление воздуха.</p>
+
+<div id="speed-fader" onMouseMove="mouseMove(event,'speed')" onMouseOut="stopMouseMove('speed')" onclick="faderPlugSpeed()">
+  <div id="speed-percent"></div>
+  <div id="speed-punktir"></div>
+</div>
+<p>Скорость вылета.</p>
+
+<div id="degree-fader" onMouseMove="mouseMoveDegree(event)" onMouseOut="stopMouseMoveDegree()" onclick="faderPlugDegree()">
+  <div id="degree-percent"></div>
+  <div id="degree-punktir"></div>
+</div>
+<p>Угол вылета.</p>
+
+
+<button id="start" onClick="movieBall();return false;">Пуск</button>
+<button id="stop" onClick="stopJumpBall();return false;">Стоп</button>
+<button onClick="stopJumpBall();resetBoll();return false;">Вернуть</button>
+</div>
+
+
+
+
+
+<div id="settings-box2"><!-- Блок управления -->
   <a href="#" id="gravitation1" onclick="pushButton(1);return false;">↑</a>
   <a href="#" id="gravitation2" onclick="pushButton(2);return false;">→</a>
   <a href="#" id="gravitation3" onclick="pushButton(3);return false;">↓</a>
@@ -503,12 +850,15 @@ h2{clear:both;}
 <div id="box-perecladiny"></div>
 
 <div id="box-jump-ball">
+  <div id="degree-block"></div><!-- Появляющийся блок, который указывает направление выстрела -->
   <div id="portal"></div>
   <div id="ball"></div>
   <div id="congr">Поздравляю, это победа!</div>
 </div>
 
-<div id="clear">
-</div>
+
+<div id="clear"></div>
+
+<div id="close"></div><!-- Блок, который перекрывает панель управления во время движения шарика -->
 
 </div> <!-- Закрыт блок Game -->
